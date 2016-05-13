@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Social Care Mapping Tool</title>
+		<meta name="author" content="apb21">
+	<!-- Leaflet CSS --> 
+		<link href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" rel="stylesheet">
+	<!-- Font Awesome CSS --> 
+		<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+	<!-- Bootstrap core CSS --> 
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet"> 
+	<!-- Bootstrap theme --> 
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css" rel="stylesheet">
+	</head>
+	<body role="document">
+		<nav class="navbar navbar-fixed-bottom">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+			            <span class="sr-only">Toggle navigation</span>
+			            <span class="icon-bar"></span>
+			            <span class="icon-bar"></span>
+			            <span class="icon-bar"></span>
+			          </button>
+				</div>
+				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<form class="navbar-form" action="javascript: codeLookup()">
+							<div class="form-group">
+								<input type="text" id="searchCode">
+								<button type="submit" id="searchButton" class="btn btn-info">Search</button>
+								<br><br>
+							</div>
+						</form>
+					</ul>
+				</div>
+			</div>
+		</nav>
+		<div class="container-fluid leaflet-container leaflet-fade-anim" role="main" id="map">
+		</div>
+		<!-- JQuery Dependancy -->
+			<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+		<!-- Leaflet Script -->
+			<script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+		<!-- Stamen map tiles Script -->
+			<script src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
+		<!--Bootstrap Script -->
+			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+		<script>
+			document.getElementById("map").style.height = window.innerHeight+"px";
+			$(window).resize(function(){document.getElementById("map").style.height = window.innerHeight+"px"});
+			var mapLong = 0.5;
+			var mapLat = 51.2;
+			var mapZoom = 10;
+			var map = L.map("map").setView([mapLat, mapLong],mapZoom);
+			var layer = new L.StamenTileLayer("toner");
+			layer.addTo(map);
+		</script>
+		<script>
+			function codeLookup(){
+				var codeSearch = document.getElementById("searchCode").value;
+				if(codeSearch != null || codeSearch != undefined || codeSearch != ""){
+					codeSearch = codeSearch.toUpperCase();
+					fetchLatLong(codeSearch).done(function(response){
+							if(response.status == "200"){
+								if(response.result[0]["result"] != null){
+									var LAT = Number(response.result[0]["result"]["latitude"]);
+									var LONG = Number(response.result[0]["result"]["longitude"]);
+									var MSOA = response.result[0]["result"]["msoa"];
+									var CCG = response.result[0]["result"]["ccg"];
+									var CCGCODE = response.result[0]["result"]["codes"]["ccg"];
+									var COUNTY = response.result[0]["result"]["admin_county"];
+									var OUTCODE = response.result[0]["result"]["outcode"];
+									var COUNCIL = response.result[0]["result"]["admin_district"];
+									if (COUNCIL.indexOf(" ") != -1){
+										splitCOUNCIL = COUNCIL.split(" ");
+										lengthCOUNCIL = splitCOUNCIL.length;
+										COUNCIL = splitCOUNCIL[lengthCOUNCIL-1]
+									}
+									var codeMarker = L.marker([LAT,LONG]).addTo(map);
+									var popUpString = "Postcode: " + codeSearch + "<br>" + "MSOA: " + MSOA + "<br>" + "CCG: " + CCG;
+									codeMarker.bindPopup(popUpString + "<br>" + "Please contact <a href='http://www."+COUNCIL+".gov.uk' target='_blank'>"+COUNCIL+" Council </a> to find out local providers");
+									fetchProviders(OUTCODE).done(function(response){
+										console.log(response["success"]);
+									});
+								}
+								else{
+									alert("The postcode you have entered was not recognised!")
+								}
+							}
+					});
+				}
+				else{
+					alert("Please type in a postcode before pressing Search");
+				}
+			}
+			function fetchLatLong (POSTCODE){
+				var postcodes = {"postcodes":[POSTCODE]};
+				return $.ajax({	url: 'https://api.postcodes.io/postcodes?q=[postcodes]',
+								type: 'POST',
+								data: JSON.stringify(postcodes),
+								contentType: "application/json; charset=utf-8",
+								async: true
+								});
+			}
+			
+			function fetchProviders (PARTIALCODE){
+				return $.ajax({ url: 'https://data.gov.uk/data/api/service/health/social_care_locations/partial_postcode?partial_postcode='+PARTIALCODE,
+								type: 'POST',
+								contentType: "application/json; charset=utf-8",
+								async: true
+							});
+			}
+		</script>
+	</body>
+</html>
