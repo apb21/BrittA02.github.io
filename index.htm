@@ -58,6 +58,12 @@
 			var map = L.map("map").setView([mapLat, mapLong],mapZoom);
 			var layer = new L.StamenTileLayer("toner");
 			layer.addTo(map);
+			var customIcon = L.icon({
+				iconUrl: 'icon.png',
+				iconSize:     [40, 40],
+				iconAnchor:   [20 20],
+				popupAnchor:  [0, 10]
+			});
 		</script>
 		<script>
 			function codeLookup(){
@@ -80,7 +86,7 @@
 										lengthCOUNCIL = splitCOUNCIL.length;
 										COUNCIL = splitCOUNCIL[lengthCOUNCIL-1]
 									}
-									var codeMarker = L.marker([LAT,LONG]).addTo(map);
+									var codeMarker = L.marker([LAT,LONG], {icon:customIcon}).addTo(map);
 									var popUpString = "Postcode: " + codeSearch + "<br>" + "MSOA: " + MSOA + "<br>" + "CCG: " + CCG;
 									codeMarker.bindPopup(popUpString + "<br>" + "Please contact <a href='http://www."+COUNCIL+".gov.uk' target='_blank'>"+COUNCIL+" Council </a> to find out local providers");
 									fetchProviders(OUTCODE).done(function(response){
