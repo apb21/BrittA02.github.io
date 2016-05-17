@@ -5,6 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Social Care Mapping Tool</title>
+		<tracking>
 		<meta name="author" content="apb21">
 	<!-- Leaflet CSS --> 
 		<link href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" rel="stylesheet">
@@ -14,33 +15,29 @@
 		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"> 
 	<!-- Bootstrap theme --> 
 		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" rel="stylesheet">
-		<style>
-			.fa-th{color:white;}
-		</style>
 	</head>
 	<body role="document">
 		<nav class="navbar navbar-fixed-top">
-			<div class="container-fluid">
+			<div class="container">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
 			            <span class="sr-only">Toggle navigation</span>
-			            <span class="fa-stack">
+			            <span class="fa-stack fa-3x">
 							<i class="fa fa-square fa-stack-2x" aria-hidden="true"></i>
-							<i class="fa fa-th" aria-hidden="true"></i>
+							<i class="fa fa-th fa-stack-1x fa-inverse" aria-hidden="true"></i>
 			            </span>
-			          </button>
+					</button>
+					<a href="http://www.nhs.uk" class="navbar-brand" target="_blank">
+						<img alt="Supplied by NHS Choices" src="http://blogs.nhs.uk/choices-blog/files/2014/02/logo_content_supplied.jpg">
+					</a>
 				</div>
 				<div id="navbar" class="collapse navbar-collapse">
-					<ul class="nav navbar-nav navbar-right">
-						<li>
-							<form class="navbar-form navbar-right" action="javascript: codeLookup()" role="search">
-								<div class="form-group">
-									<input type="text" id="searchCode" class="form-control" placeholder="Search for a Postcode..">
-									<button type="submit" id="searchButton" class="btn btn-warning form-control">Search</button>
-								</div>
-							</form>
-						</li>
-					</ul>
+					<form class="navbar-form navbar-right" action="javascript: codeLookup()" role="search">
+						<div class="form-group">
+							<input type="text" id="searchCode" class="form-control" placeholder="Search for a Postcode..">
+							<button type="submit" id="searchButton" class="btn btn-warning form-control">Search</button>
+						</div>
+					</form>
 				</div>
 			</div>
 		</nav>
@@ -129,11 +126,18 @@
 							});
 			}
 			function fetchNHSProviders (POSTCODE){
-				return $.ajax({ url: 'http://v1.syndication.nhschoices.nhs.uk/organisations/careproviders/postcode/'+POSTCODE+'?apikey=CGQUUEFU&range=5',
-								type: 'POST',
-								contentType: "application/json; charset=utf-8",
-								async: true
-							});
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function(){
+					if (xhttp.readySTate == 4&& xhttp.status == 200){
+						return (xhttp.responseText);
+					}
+				};
+				xhttp.open(
+					"GET",
+					'http://v1.syndication.nhschoices.nhs.uk/organisations/careproviders/postcode/'+POSTCODE+'.xml?apikey=CGQUUEFU&range=5',
+					true
+				);
+				xhttp.send();
 			}
 		</script>
 	</body>
