@@ -11,30 +11,35 @@
 	<!-- Font Awesome CSS --> 
 		<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
 	<!-- Bootstrap core CSS --> 
-		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet"> 
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"> 
 	<!-- Bootstrap theme --> 
-		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css" rel="stylesheet">
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" rel="stylesheet">
+		<style>
+			.fa-th{color:white;}
+		</style>
 	</head>
 	<body role="document">
-		<nav class="navbar navbar-fixed-bottom">
+		<nav class="navbar navbar-fixed-top">
 			<div class="container-fluid">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
 			            <span class="sr-only">Toggle navigation</span>
-			            <span class="icon-bar"></span>
-			            <span class="icon-bar"></span>
-			            <span class="icon-bar"></span>
+			            <span class="fa-stack">
+							<i class="fa fa-square fa-stack-2x" aria-hidden="true"></i>
+							<i class="fa fa-th" aria-hidden="true"></i>
+			            </span>
 			          </button>
 				</div>
-				<div id="navbar" class="navbar-collapse collapse">
+				<div id="navbar" class="collapse navbar-collapse">
 					<ul class="nav navbar-nav navbar-right">
-						<form class="navbar-form" action="javascript: codeLookup()">
-							<div class="form-group">
-								<input type="text" id="searchCode">
-								<button type="submit" id="searchButton" class="btn btn-info">Search</button>
-								<br><br>
-							</div>
-						</form>
+						<li>
+							<form class="navbar-form navbar-right" action="javascript: codeLookup()" role="search">
+								<div class="form-group">
+									<input type="text" id="searchCode" class="form-control" placeholder="Search for a Postcode..">
+									<button type="submit" id="searchButton" class="btn btn-warning form-control">Search</button>
+								</div>
+							</form>
+						</li>
 					</ul>
 				</div>
 			</div>
@@ -48,14 +53,14 @@
 		<!-- Stamen map tiles Script -->
 			<script src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
 		<!--Bootstrap Script -->
-			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 		<script>
 			document.getElementById("map").style.height = window.innerHeight+"px";
 			$(window).resize(function(){document.getElementById("map").style.height = window.innerHeight+"px"});
-			var mapLong = 0.5;
-			var mapLat = 51.2;
-			var mapZoom = 10;
-			var map = L.map("map").setView([mapLat, mapLong],mapZoom);
+			var mapLong = -1;
+			var mapLat = 55;
+			var mapZoom = 6;
+			var map = L.map("map",{zoomControl:false}).setView([mapLat, mapLong],mapZoom);
 			var layer = new L.StamenTileLayer("toner");
 			layer.addTo(map);
 			var customIcon = L.icon({
@@ -64,6 +69,8 @@
 				iconAnchor:   [15, 15],
 				popupAnchor:  [0, -10]
 			});
+			var zoom = L.control.zoom({position:"bottomleft"});
+			zoom.addTo(map);
 		</script>
 		<script>
 			function codeLookup(){
@@ -87,10 +94,11 @@
 										COUNCIL = splitCOUNCIL[lengthCOUNCIL-1]
 									}
 									var codeMarker = L.marker([LAT,LONG], {icon:customIcon}).addTo(map);
-									var popUpString = "Postcode: " + codeSearch + "<br>" + "MSOA: " + MSOA + "<br>" + "CCG: " + CCG;
-									codeMarker.bindPopup(popUpString + "<br>" + "Please contact <a href='http://www."+COUNCIL+".gov.uk' target='_blank'>"+COUNCIL+" Council </a> to find out local providers");
-									fetchProviders(OUTCODE).done(function(response){
-										console.log(response["success"]);
+									map.setView([LAT,LONG],10);
+									var popUpString = "Postcode: " + codeSearch + "<br>" + "MSOA: " + MSOA + "<br>" + "CCG: " + CCG + "<br>" + "Local Government: <a href='http://www."+COUNCIL+".gov.uk' target='_blank'>"+COUNCIL+" Council</a>";
+									codeMarker.bindPopup(popUpString);
+									fetchNHSProviders(codeSearch).done(function(response){
+										console.log(response);
 									});
 								}
 								else{
@@ -115,6 +123,13 @@
 			
 			function fetchProviders (PARTIALCODE){
 				return $.ajax({ url: 'https://data.gov.uk/data/api/service/health/social_care_locations/partial_postcode?partial_postcode='+PARTIALCODE,
+								type: 'POST',
+								contentType: "application/json; charset=utf-8",
+								async: true
+							});
+			}
+			function fetchNHSProviders (POSTCODE){
+				return $.ajax({ url: 'http://v1.syndication.nhschoices.nhs.uk/organisations/careproviders/postcode/'+POSTCODE+'?apikey=CGQUUEFU&range=5',
 								type: 'POST',
 								contentType: "application/json; charset=utf-8",
 								async: true
