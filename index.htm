@@ -5,7 +5,6 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Social Care Mapping Tool</title>
-		<tracking>
 		<meta name="author" content="apb21">
 	<!-- Leaflet CSS --> 
 		<link href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" rel="stylesheet">
@@ -22,14 +21,11 @@
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
 			            <span class="sr-only">Toggle navigation</span>
-			            <span class="fa-stack fa-3x">
+			            <span class="fa-stack">
 							<i class="fa fa-square fa-stack-2x" aria-hidden="true"></i>
-							<i class="fa fa-th fa-stack-1x fa-inverse" aria-hidden="true"></i>
+							<i class="fa fa-caret-square-o-down fa-stack-1x fa-inverse fa-2x" aria-hidden="true"></i>
 			            </span>
 					</button>
-					<a href="http://www.nhs.uk" class="navbar-brand" target="_blank">
-						<img alt="Supplied by NHS Choices" src="http://blogs.nhs.uk/choices-blog/files/2014/02/logo_content_supplied.jpg">
-					</a>
 				</div>
 				<div id="navbar" class="collapse navbar-collapse">
 					<form class="navbar-form navbar-right" action="javascript: codeLookup()" role="search">
@@ -66,8 +62,6 @@
 				iconAnchor:   [15, 15],
 				popupAnchor:  [0, -10]
 			});
-			var zoom = L.control.zoom({position:"bottomleft"});
-			zoom.addTo(map);
 		</script>
 		<script>
 			function codeLookup(){
@@ -91,11 +85,24 @@
 										COUNCIL = splitCOUNCIL[lengthCOUNCIL-1]
 									}
 									var codeMarker = L.marker([LAT,LONG], {icon:customIcon}).addTo(map);
-									map.setView([LAT,LONG],10);
+									map.setView([LAT,LONG],14);
 									var popUpString = "Postcode: " + codeSearch + "<br>" + "MSOA: " + MSOA + "<br>" + "CCG: " + CCG + "<br>" + "Local Government: <a href='http://www."+COUNCIL+".gov.uk' target='_blank'>"+COUNCIL+" Council</a>";
 									codeMarker.bindPopup(popUpString);
-									fetchNHSProviders(codeSearch).done(function(response){
-										console.log(response);
+									fetchProviders(OUTCODE).done(function(response){
+										//console.log (response.success);
+										var PROVIDER;
+										var PROVIDERS = response.result
+										//console.log(PROVIDERS);
+										for (PROVIDER in PROVIDERS){
+											console.log(PROVIDER);
+											var PROVIDERLAT = PROVIDERS[PROVIDER].latitude;
+											//console.log(PROVIDERLAT);
+											var PROVIDERLONG = PROVIDERS[PROVIDER].longitude;
+											//console.log(PROVIDERLONG);
+											var PROVIDERSTRING = "Name: " + PROVIDERS[PROVIDER].organisation_name + "<br>" + "Phone: " + PROVIDERS[PROVIDER].phone + "<br>" + "<a href='" + PROVIDERS[PROVIDER].website + "' target='_blank'>"+PROVIDERS[PROVIDER].website+"</a>";
+											var PROVIDERMARKER = L.marker([PROVIDERLAT,PROVIDERLONG]).addTo(map);
+											PROVIDERMARKER.bindPopup(PROVIDERSTRING);
+										}
 									});
 								}
 								else{
@@ -117,28 +124,12 @@
 								async: true
 								});
 			}
-			
 			function fetchProviders (PARTIALCODE){
-				return $.ajax({ url: 'https://data.gov.uk/data/api/service/health/social_care_locations/partial_postcode?partial_postcode='+PARTIALCODE,
-								type: 'POST',
-								contentType: "application/json; charset=utf-8",
-								async: true
-							});
+				return $.getJSON('https://data.gov.uk/data/api/service/health/social_care_locations?partial_postcode='+PARTIALCODE)
 			}
-			function fetchNHSProviders (POSTCODE){
-				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function(){
-					if (xhttp.readySTate == 4&& xhttp.status == 200){
-						return (xhttp.responseText);
-					}
-				};
-				xhttp.open(
-					"GET",
-					'http://v1.syndication.nhschoices.nhs.uk/organisations/careproviders/postcode/'+POSTCODE+'.xml?apikey=CGQUUEFU&range=5',
-					true
-				);
-				xhttp.send();
-			}
+			$(".navbar-toggle").click(function(){
+				$(this).find("i").last().toggleClass("fa-caret-square-o-down fa-caret-square-o-up");
+			});
 		</script>
 	</body>
 </html>
