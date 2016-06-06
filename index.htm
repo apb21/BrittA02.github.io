@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Social Care Mapping Tool</title>
+		<title>Project Seity</title>
 		<meta name="author" content="apb21">
 	<!-- Leaflet CSS --> 
 		<link href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" rel="stylesheet">
@@ -14,6 +14,10 @@
 		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"> 
 	<!-- Bootstrap theme --> 
 		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" rel="stylesheet">
+	<!--Ion Icons CSS -->
+		<link href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet">
+	<!-- Awesome Markers CSS -->
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css" rel="stylesheet">
 	</head>
 	<body role="document">
 		<nav class="navbar navbar-fixed-top">
@@ -26,12 +30,17 @@
 							<i class="fa fa-caret-square-o-down fa-stack-1x fa-inverse fa-2x" aria-hidden="true"></i>
 			            </span>
 					</button>
+					<a class="navbar-brand" href="#">Project Seity</a>
 				</div>
 				<div id="navbar" class="collapse navbar-collapse">
 					<form class="navbar-form navbar-right" action="javascript: codeLookup()" role="search">
 						<div class="form-group">
-							<input type="text" id="searchCode" class="form-control" placeholder="Search for a Postcode..">
-							<button type="submit" id="searchButton" class="btn btn-warning form-control">Search</button>
+							<div class="input-group">
+								<input type="text" id="searchCode" class="form-control" placeholder="Search for a Postcode..">
+								<span class="input-group-btn">
+									<button type="submit" id="searchButton" class="btn btn-warning form-control">Search</button>
+								</span>
+							</div>
 						</div>
 					</form>
 				</div>
@@ -47,6 +56,8 @@
 			<script src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
 		<!--Bootstrap Script -->
 			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+		<!-- Awesome Markers Script -->
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.min.js"></script>
 		<script>
 			document.getElementById("map").style.height = window.innerHeight+"px";
 			$(window).resize(function(){document.getElementById("map").style.height = window.innerHeight+"px"});
@@ -56,11 +67,14 @@
 			var map = L.map("map",{zoomControl:false}).setView([mapLat, mapLong],mapZoom);
 			var layer = new L.StamenTileLayer("toner");
 			layer.addTo(map);
-			var customIcon = L.icon({
-				iconUrl: 'icon.png',
-				iconSize:     [30, 30],
-				iconAnchor:   [15, 15],
-				popupAnchor:  [0, -10]
+			L.AwesomeMarkers.Icon.prototype.options.prefix = 'fa';
+			var userIcon = L.AwesomeMarkers.icon({
+				icon:'user',
+				markerColor:'orange'
+			});
+			var homeIcon = L.AwesomeMarkers.icon({
+				icon:'home',
+				markerColor:'blue'
 			});
 		</script>
 		<script>
@@ -84,25 +98,42 @@
 										lengthCOUNCIL = splitCOUNCIL.length;
 										COUNCIL = splitCOUNCIL[lengthCOUNCIL-1]
 									}
-									var codeMarker = L.marker([LAT,LONG], {icon:customIcon}).addTo(map);
+									var codeMarker = L.marker([LAT,LONG], {icon:userIcon}).addTo(map);
 									map.setView([LAT,LONG],14);
-									var popUpString = "Postcode: " + codeSearch + "<br>" + "MSOA: " + MSOA + "<br>" + "CCG: " + CCG + "<br>" + "Local Government: <a href='http://www."+COUNCIL+".gov.uk' target='_blank'>"+COUNCIL+" Council</a>";
+									var popUpString = "<p>" +
+										"Postcode: " + codeSearch + "<br>" +
+										"MSOA: " + MSOA + "<br>" +
+										"CCG: " + CCG + "<br>" +
+										"Local Government: <a href='http://www."+COUNCIL+".gov.uk' target='_blank'>"+COUNCIL+" Council</a>" +
+										"</p>";
 									codeMarker.bindPopup(popUpString);
 									fetchProviders(OUTCODE).done(function(response){
-										//console.log (response.success);
 										var PROVIDER;
 										var PROVIDERS = response.result
-										//console.log(PROVIDERS);
 										for (PROVIDER in PROVIDERS){
-											console.log(PROVIDER);
+											//console.log(PROVIDERS[PROVIDER]);
 											var PROVIDERLAT = PROVIDERS[PROVIDER].latitude;
-											//console.log(PROVIDERLAT);
 											var PROVIDERLONG = PROVIDERS[PROVIDER].longitude;
-											//console.log(PROVIDERLONG);
-											var PROVIDERSTRING = "Name: " + PROVIDERS[PROVIDER].organisation_name + "<br>" + "Phone: " + PROVIDERS[PROVIDER].phone + "<br>" + "<a href='" + PROVIDERS[PROVIDER].website + "' target='_blank'>"+PROVIDERS[PROVIDER].website+"</a>";
-											var PROVIDERMARKER = L.marker([PROVIDERLAT,PROVIDERLONG]).addTo(map);
+											var PROVIDERSTRING = "<div class='list-group'>" +
+												"<li class='list-group-item list-group-item-info'>" + "<h3>" + PROVIDERS[PROVIDER].organisation_name + "</h3>" +"</li>"+ 
+												"<li class='list-group-item'>" +
+													PROVIDERS[PROVIDER].address1 + "<br>" +
+													PROVIDERS[PROVIDER].address2 + "<br>" +
+													PROVIDERS[PROVIDER].address3 + "<br>" + 
+													PROVIDERS[PROVIDER].postcode +
+												"</li>" + 
+												"<li class='list-group-item'>" + "<span class='glyphicon glyphicon-earphone fa-2x' aria-hidden='true'></span>" + " " + PROVIDERS[PROVIDER].phone + "</li>" + 
+												"<a class='list-group-item' href='" + PROVIDERS[PROVIDER].website + "' target='_blank'><i class='fa fa-terminal fa-2x' aria-hidden='true'></i>" + " " + PROVIDERS[PROVIDER].website+"</a>" + "</li>" +
+												"<a class='list-group-item' href='http://www.cqc.org.uk/location/" + PROVIDERS[PROVIDER].organisation_code + "' target='_blank'><i class='fa fa-tachometer fa-2x' aria-hidden='true'></i>" + " CQC Report</a>" + "</li>" +
+												"<a class='list-group-item' href='https://www.google.co.uk/maps/dir/" + codeSearch + "/" + PROVIDERS[PROVIDER].postcode + "' target='_blank'><i class='fa fa-car fa-2x' aria-hidden='true'></i>" + " Google Maps Directions" + "</a>" +
+												"</div>";
+											var PROVIDERMARKER = L.marker([PROVIDERLAT,PROVIDERLONG], {icon:homeIcon}).addTo(map);
 											PROVIDERMARKER.bindPopup(PROVIDERSTRING);
+											console.log(fetchCQC(PROVIDERS[PROVIDER].organisation_code));
 										}
+									});
+									fetchNHS(codeSearch).done(function(response){
+										console.log(response)
 									});
 								}
 								else{
@@ -124,12 +155,26 @@
 								async: true
 								});
 			}
+			
 			function fetchProviders (PARTIALCODE){
 				return $.getJSON('https://data.gov.uk/data/api/service/health/social_care_locations?partial_postcode='+PARTIALCODE)
 			}
+			
 			$(".navbar-toggle").click(function(){
 				$(this).find("i").last().toggleClass("fa-caret-square-o-down fa-caret-square-o-up");
 			});
+			
+			function fetchCQC(LOCATIONCODE){
+				return $.getJSON('https://api.cqc.org.uk/public/v1/locations/'+LOCATIONCODE);
+			}
+			
+			function fetchNHS(FULLCODE){
+				return $.ajax({	url:'http://v1.syndication.nhschoices.nhs.uk/organisations/careproviders/postcode/'+FULLCODE+'?apikey=CGQUUEFU&range=25',
+								type: 'GET',
+								contentType: "application/xml; charset=utf-8",
+								async: true
+								});
+			}
 		</script>
 	</body>
 </html>
