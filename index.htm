@@ -18,9 +18,52 @@
 		<link href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet">
 	<!-- Awesome Markers CSS -->
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css" rel="stylesheet">
+		<style>
+			.holder{
+				display:inline-block;
+				transform:rotateY(0deg);
+				perspective:500px;
+				margin:2em;
+				border-radius:12px;
+			}
+			.holder.flipped .card{
+				transform:rotateY(180deg);
+			}
+			.card{
+				position:relative;
+				display: block;
+				transition: 1s;
+				transform-style: preserve-3d;
+			}
+			.holder, .front, .back{
+				width: 250px;
+				height: 280px;
+			}
+			.front, .back{
+				backface-visibility: hidden;
+				box-sizing: border-box;
+				position: absolute;
+				top: 0;
+				left: 0;
+			}
+			.front {
+				z-index: 2;
+				transform: rotateY(0deg);
+				background-size: cover;
+			}
+			.back{
+				padding: 1em;
+				transform: rotateY(180deg);
+				background: #eee;
+			}
+			.flipper{
+				text-align:center;
+				text-decoration:underline;
+			}
+		</style>
 	</head>
 	<body role="document">
-		<nav class="navbar navbar-fixed-top">
+		<nav class="navbar navbar-fixed-top navbar-inverse">
 			<div class="container">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -111,29 +154,37 @@
 										var PROVIDER;
 										var PROVIDERS = response.result
 										for (PROVIDER in PROVIDERS){
-											//console.log(PROVIDERS[PROVIDER]);
 											var PROVIDERLAT = PROVIDERS[PROVIDER].latitude;
 											var PROVIDERLONG = PROVIDERS[PROVIDER].longitude;
-											var PROVIDERSTRING = "<div class='list-group'>" +
-												"<li class='list-group-item list-group-item-info'>" + "<h3>" + PROVIDERS[PROVIDER].organisation_name + "</h3>" +"</li>"+ 
-												"<li class='list-group-item'>" +
-													PROVIDERS[PROVIDER].address1 + "<br>" +
-													PROVIDERS[PROVIDER].address2 + "<br>" +
-													PROVIDERS[PROVIDER].address3 + "<br>" + 
-													PROVIDERS[PROVIDER].postcode +
-												"</li>" + 
-												"<li class='list-group-item'>" + "<span class='glyphicon glyphicon-earphone fa-2x' aria-hidden='true'></span>" + " " + PROVIDERS[PROVIDER].phone + "</li>" + 
-												"<a class='list-group-item' href='" + PROVIDERS[PROVIDER].website + "' target='_blank'><i class='fa fa-terminal fa-2x' aria-hidden='true'></i>" + " " + PROVIDERS[PROVIDER].website+"</a>" + "</li>" +
-												"<a class='list-group-item' href='http://www.cqc.org.uk/location/" + PROVIDERS[PROVIDER].organisation_code + "' target='_blank'><i class='fa fa-tachometer fa-2x' aria-hidden='true'></i>" + " CQC Report</a>" + "</li>" +
-												"<a class='list-group-item' href='https://www.google.co.uk/maps/dir/" + codeSearch + "/" + PROVIDERS[PROVIDER].postcode + "' target='_blank'><i class='fa fa-car fa-2x' aria-hidden='true'></i>" + " Google Maps Directions" + "</a>" +
+											var PROVIDERSTRING =
+												"<div class='holder'>" +
+													"<div class='card'>" + 
+														"<div class='front'>" + 
+															"<div class='list-group'>" +
+																"<li class='list-group-item list-group-item-info'>" + "<h3>" + PROVIDERS[PROVIDER].organisation_name + "</h3>" +"</li>"+ 
+																"<li class='list-group-item'>" +
+																	PROVIDERS[PROVIDER].address1 + "<br>" +
+																	PROVIDERS[PROVIDER].address2 + "<br>" +
+																	PROVIDERS[PROVIDER].address3 + "<br>" + 
+																	PROVIDERS[PROVIDER].postcode +
+																"</li>" +
+																"<li class='list-group-item'>" + "<span class='glyphicon glyphicon-earphone fa-2x' aria-hidden='true'></span>" + " " + PROVIDERS[PROVIDER].phone + "</li>" + 
+																"<a class='list-group-item list-group-item-info flipper' onClick='flipCard()'>More Details</li>" +
+															"</div>" +
+														"</div>" +
+														"<div class='back'>" +
+															"<div class='list-group'>" +
+																"<a class='list-group-item' href='" + PROVIDERS[PROVIDER].website + "' target='_blank'><i class='fa fa-terminal fa-2x' aria-hidden='true'></i>" + " " + PROVIDERS[PROVIDER].website+"</a>" + "</li>" +
+																"<a class='list-group-item' href='http://www.cqc.org.uk/location/" + PROVIDERS[PROVIDER].organisation_code + "' target='_blank'><i class='fa fa-tachometer fa-2x' aria-hidden='true'></i>" + " CQC Report</a>" + "</li>" +
+																"<a class='list-group-item' href='https://www.google.co.uk/maps/dir/" + codeSearch + "/" + PROVIDERS[PROVIDER].postcode + "' target='_blank'><i class='fa fa-car fa-2x' aria-hidden='true'></i>" + " Google Maps Directions" + "</a>" +
+																"<a class='list-group-item list-group-item-info flipper'onClick='flipCard()'>Main Details</a>" +
+															"</div>" +
+														"</div>" +
+													"</div>" +
 												"</div>";
 											var PROVIDERMARKER = L.marker([PROVIDERLAT,PROVIDERLONG], {icon:homeIcon}).addTo(map);
 											PROVIDERMARKER.bindPopup(PROVIDERSTRING);
-											console.log(fetchCQC(PROVIDERS[PROVIDER].organisation_code));
 										}
-									});
-									fetchNHS(codeSearch).done(function(response){
-										console.log(response)
 									});
 								}
 								else{
@@ -164,17 +215,9 @@
 				$(this).find("i").last().toggleClass("fa-caret-square-o-down fa-caret-square-o-up");
 			});
 			
-			function fetchCQC(LOCATIONCODE){
-				return $.getJSON('https://api.cqc.org.uk/public/v1/locations/'+LOCATIONCODE);
-			}
-			
-			function fetchNHS(FULLCODE){
-				return $.ajax({	url:'http://v1.syndication.nhschoices.nhs.uk/organisations/careproviders/postcode/'+FULLCODE+'?apikey=CGQUUEFU&range=25',
-								type: 'GET',
-								contentType: "application/xml; charset=utf-8",
-								async: true
-								});
-			}
+			function flipCard(){
+				$(".holder").toggleClass("flipped");
+			};
 		</script>
 	</body>
 </html>
