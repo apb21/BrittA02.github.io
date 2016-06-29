@@ -6,13 +6,13 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Project Seity</title>
 		<meta name="author" content="apb21">
-	<!-- Leaflet CSS --> 
+	<!-- Leaflet CSS -->
 		<link href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" rel="stylesheet">
-	<!-- Font Awesome CSS --> 
+	<!-- Font Awesome CSS -->
 		<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
-	<!-- Bootstrap core CSS --> 
-		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"> 
-	<!-- Bootstrap theme --> 
+	<!-- Bootstrap core CSS -->
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap theme -->
 		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" rel="stylesheet">
 	<!--Ion Icons CSS -->
 		<link href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet">
@@ -36,7 +36,7 @@
 				transform-style: preserve-3d;
 			}
 			.holder, .front, .back{
-				width: 250px;
+				width: 240px;
 				height: 280px;
 			}
 			.front, .back{
@@ -59,6 +59,13 @@
 			.flipper{
 				text-align:center;
 				text-decoration:underline;
+				font-size: 15px;
+			}
+			.leaflet-popup-content{
+				margin: 0px;
+			}
+			.list-group-item-info{
+				max-height: 110px;
 			}
 		</style>
 	</head>
@@ -143,12 +150,14 @@
 									}
 									var codeMarker = L.marker([LAT,LONG], {icon:userIcon}).addTo(map);
 									map.setView([LAT,LONG],14);
-									var popUpString = "<p>" +
+									var popUpString = "<div class='holder'>" +
+										"<p>" +
 										"Postcode: " + codeSearch + "<br>" +
 										"MSOA: " + MSOA + "<br>" +
 										"CCG: " + CCG + "<br>" +
 										"Local Government: <a href='http://www."+COUNCIL+".gov.uk' target='_blank'>"+COUNCIL+" Council</a>" +
-										"</p>";
+										"</p>" +
+										"</div>";
 									codeMarker.bindPopup(popUpString);
 									fetchProviders(OUTCODE).done(function(response){
 										var PROVIDER;
@@ -158,17 +167,17 @@
 											var PROVIDERLONG = PROVIDERS[PROVIDER].longitude;
 											var PROVIDERSTRING =
 												"<div class='holder'>" +
-													"<div class='card'>" + 
-														"<div class='front'>" + 
+													"<div class='card'>" +
+														"<div class='front'>" +
 															"<div class='list-group'>" +
-																"<li class='list-group-item list-group-item-info'>" + "<h3>" + PROVIDERS[PROVIDER].organisation_name + "</h3>" +"</li>"+ 
+																"<li class='list-group-item list-group-item-info'>" + "<h3>" + PROVIDERS[PROVIDER].organisation_name + "</h3>" +"</li>"+
 																"<li class='list-group-item'>" +
 																	PROVIDERS[PROVIDER].address1 + "<br>" +
 																	PROVIDERS[PROVIDER].address2 + "<br>" +
-																	PROVIDERS[PROVIDER].address3 + "<br>" + 
+																	PROVIDERS[PROVIDER].address3 + "<br>" +
 																	PROVIDERS[PROVIDER].postcode +
 																"</li>" +
-																"<li class='list-group-item'>" + "<span class='glyphicon glyphicon-earphone fa-2x' aria-hidden='true'></span>" + " " + PROVIDERS[PROVIDER].phone + "</li>" + 
+																"<li class='list-group-item'>" + "<span class='glyphicon glyphicon-earphone fa-2x' aria-hidden='true'></span>" + " " + PROVIDERS[PROVIDER].phone + "</li>" +
 																"<a class='list-group-item list-group-item-info flipper' onClick='flipCard()'>More Details</li>" +
 															"</div>" +
 														"</div>" +
@@ -182,8 +191,9 @@
 														"</div>" +
 													"</div>" +
 												"</div>";
+											var PROVPOPUP = L.popup().setLatLng(PROVIDERLAT,PROVIDERLONG).setContent(PROVIDERSTRING);
 											var PROVIDERMARKER = L.marker([PROVIDERLAT,PROVIDERLONG], {icon:homeIcon}).addTo(map);
-											PROVIDERMARKER.bindPopup(PROVIDERSTRING);
+											PROVIDERMARKER.bindPopup(PROVPOPUP);
 										}
 									});
 								}
@@ -206,15 +216,15 @@
 								async: true
 								});
 			}
-			
+
 			function fetchProviders (PARTIALCODE){
 				return $.getJSON('https://data.gov.uk/data/api/service/health/social_care_locations?partial_postcode='+PARTIALCODE)
 			}
-			
+
 			$(".navbar-toggle").click(function(){
 				$(this).find("i").last().toggleClass("fa-caret-square-o-down fa-caret-square-o-up");
 			});
-			
+
 			function flipCard(){
 				$(".holder").toggleClass("flipped");
 			};
