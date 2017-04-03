@@ -56,7 +56,7 @@
         basemap.addTo(map);
 
         $(document).ready(function () {
-            $.getJSON('http://geoportal.statistics.gov.uk/datasets/da831f80764346889837c72508f046fa_2.geojson', function (data) {
+            $.getJSON('https://geoportal.statistics.gov.uk/datasets/da831f80764346889837c72508f046fa_2.geojson', function (data) {
                 console.log(data);
                 $.each(data.features, function (key, val) {
                     val.properties.popupContent=val.properties.lsoa11nm;
