@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LSOA Mapping Tool</title>
+    <meta name="author" content="Andre Britton">
+    <link rel="shortcut icon" type="image/x-icon" href="http://www.kent.gov.uk/__data/assets/file/0018/11817/favicon.ico" data-norem>
+  <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+  <!-- Font Awesome -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- Bootstrap  -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+  </head>
+  <body role="document">
+    <div class="container-fluid leaflet-container leaflet-fade-anim" role="main" id="map">
+    </div>
+    <!-- jquery -->
+      <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <!-- Bootstrap Plugin -->
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!-- Leaflet plugin -->
+      <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <!-- Stamen Plugin -->
+      <script src="http://maps.stamen.com/js/tile.stamen.js"></script>
+    <!-- GEOJSON file>
+      <script src="http://geoportal.statistics.gov.uk/datasets/da831f80764346889837c72508f046fa_2.geojson"></script-->
+    <!-- PapaParse -->
+      <script src="https://rawgit.com/mholt/PapaParse/master/papaparse.min.js"></script>
+    <!-- jquery-csv -->
+      <script src="https://rawgit.com/evanplaice/jquery-csv/master/src/jquery.csv.min.js"></script>
+      <script>
+        document.getElementById("map").style.height = window.innerHeight+"px";
+        $(window).resize(function(){document.getElementById("map").style.height = window.innerHeight+"px"});
+        var mapLong = 0.7;
+        var mapLat = 51.2;
+        var mapZoom = 9;
+        var map = L.map("map").setView([mapLat, mapLong],mapZoom);
+        var layer = new L.StamenTileLayer("terrain");
+        layer.addTo(map);
+
+        $(document).ready(function () {
+            $.getJSON('http://geoportal.statistics.gov.uk/datasets/da831f80764346889837c72508f046fa_2.geojson', function (data) {
+                console.log(data);
+                var items = [];
+                $.each(data.features, function (key, val) {
+                    items.push('<li id="' + key + '">' + val + '</li>');
+                });
+                $('<ul/>', {
+                    'class':'my-new-list',
+                    html:items.join('')
+                }).appendTo('body');
+            });
+        });
+      </script>
+  </body>
+</html>
