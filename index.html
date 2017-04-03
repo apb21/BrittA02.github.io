@@ -27,7 +27,7 @@
     <!-- Leaflet plugin -->
       <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <!-- Stamen Plugin -->
-      <script src="https://maps.stamen.com/js/tile.stamen.js"></script>
+      <!--script src="https://maps.stamen.com/js/tile.stamen.js"></script-->
     <!-- GEOJSON file>
       <script src="http://geoportal.statistics.gov.uk/datasets/da831f80764346889837c72508f046fa_2.geojson"></script-->
     <!-- PapaParse -->
@@ -41,7 +41,23 @@
         var mapLat = 51.2;
         var mapZoom = 9;
         var map = L.map("map").setView([mapLat, mapLong],mapZoom);
-        var layer = new L.StamenTileLayer("terrain");
+        var tonerUrl = "http://{S}tile.stamen.com/toner/{Z}/{X}/{Y}.png";
+
+        var url = tonerUrl.replace(/({[A-Z]})/g, function(s) {
+            return s.toLowerCase();
+        });
+
+        var basemap = L.tileLayer(url, {
+            subdomains: ['','a.','b.','c.','d.'],
+            minZoom: 0,
+            maxZoom: 20,
+            type: 'png',
+            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>'
+        });
+
+        basemap.addTo(map);
+
+        //var layer = new L.StamenTileLayer("terrain");
         layer.addTo(map);
 
         $(document).ready(function () {
