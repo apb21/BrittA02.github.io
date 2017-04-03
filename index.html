@@ -26,8 +26,6 @@
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <!-- Leaflet plugin -->
       <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
-    <!-- Stamen Plugin -->
-      <!--script src="https://maps.stamen.com/js/tile.stamen.js"></script-->
     <!-- GEOJSON file>
       <script src="http://geoportal.statistics.gov.uk/datasets/da831f80764346889837c72508f046fa_2.geojson"></script-->
     <!-- PapaParse -->
@@ -41,7 +39,7 @@
         var mapLat = 51.2;
         var mapZoom = 9;
         var map = L.map("map").setView([mapLat, mapLong],mapZoom);
-        var tonerUrl = "http://{S}tile.stamen.com/toner/{Z}/{X}/{Y}.png";
+        var tonerUrl = "http://{S}tile.stamen.com/terrain/{Z}/{X}/{Y}.png";
 
         var url = tonerUrl.replace(/({[A-Z]})/g, function(s) {
             return s.toLowerCase();
@@ -57,20 +55,13 @@
 
         basemap.addTo(map);
 
-        //var layer = new L.StamenTileLayer("terrain");
-        layer.addTo(map);
-
         $(document).ready(function () {
-            $.getJSON('https://geoportal.statistics.gov.uk/datasets/da831f80764346889837c72508f046fa_2.geojson', function (data) {
+            $.getJSON('http://geoportal.statistics.gov.uk/datasets/da831f80764346889837c72508f046fa_2.geojson', function (data) {
                 console.log(data);
-                var items = [];
                 $.each(data.features, function (key, val) {
-                    items.push('<li id="' + key + '">' + val + '</li>');
+                    val.properties.popupContent=val.properties.lsoa11nm;
+                    L.geoJSON(val).addTo(map);
                 });
-                $('<ul/>', {
-                    'class':'my-new-list',
-                    html:items.join('')
-                }).appendTo('body');
             });
         });
       </script>
