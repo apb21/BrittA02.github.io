@@ -56,14 +56,69 @@
         basemap.addTo(map);
 
         $(document).ready(function () {
-            $.getJSON('https://geoportal.statistics.gov.uk/datasets/da831f80764346889837c72508f046fa_2.geojson', function (data) {
-                console.log(data);
-                $.each(data.features, function (key, val) {
-                    val.properties.popupContent=val.properties.lsoa11nm;
-                    L.geoJSON(val).addTo(map);
-                });
+            $.getJSON('http://geoportal.statistics.gov.uk/datasets/da831f80764346889837c72508f046fa_2.geojson', function (data) {
+                //console.log(data);
+                L.geoJSON(data.features,
+                  {filter: function(feature,layer)
+                    {
+                      if (feature.properties.lsoa11nm){
+                        var thisName = feature.properties.lsoa11nm;
+                        thisName = thisName.substring(0,thisName.search(" "));
+                        switch (thisName) {
+                          case "Ashford":
+                            return true;
+                            break;
+                          case "Canterbury":
+                            return true;
+                            break;
+                          case "Dover":
+                            return true;
+                            break;
+                          case "Maidstone":
+                            return true;
+                            break;
+                          case "Shepway":
+                            return true;
+                            break;
+                          case "Tunbridge":
+                            return true;
+                            break;
+                          case "Tonbridge":
+                            return true;
+                            break;
+                          case "Swale":
+                            return true;
+                            break;
+                          case "Medway":
+                            return true;
+                            break;
+                          case "Thanet":
+                            return true;
+                            break;
+                          default:
+                            return false;
+                        }
+                      }
+                    }
+                  , onEachFeature: bindNameAsPopup
+                  , style: function(feature){
+                    switch (feature.properties.lsoa11nm.substring(0,feature.properties.lsoa11nm.search(" "))) {
+                      case "Medway":
+                        return {color:"#ff0000"};
+                        break;
+                      default:
+                        return {color:"#0000ff"}
+                    }
+                  }
+                  }).addTo(map);
+                //console.log("All Drawn");
             });
         });
+        function bindNameAsPopup(feature, layer){
+          if(feature.properties.lsoa11nm){
+            layer.bindPopup(feature.properties.lsoa11nm)
+          }
+        }
       </script>
   </body>
 </html>
